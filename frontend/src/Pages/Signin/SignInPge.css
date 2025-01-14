@@ -1,0 +1,63 @@
+.sign-in-container {
+    padding: 20px;
+    max-width: 400px;
+    margin: auto;
+    text-align: center;
+  }
+  
+.auth-form-container {
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+  background: #EDEADE ;
+  border: 2px solid #36454F;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+  
+  .form-group {
+    margin: 10px 0;
+  }
+  
+  input {
+    width: 100%;
+    padding: 8px;
+  }
+  
+  .error-message {
+    color: red;
+  }
+  
+  .submit-button {
+    padding: 10px 20px;
+    background: #3a3d3b;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .submit-button:hover {
+    background: #d1cc3c;
+  }
+  /* .submit-button:disabled { */
+    /* background-color: #ccc;
+  } */
+
+  
+  .radio {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between items */
+  }
+  
+  .radio label {
+    display: flex;
+    align-items: right;
+    margin: 0; /* Remove default margin */
+  }
+  
+  .radio input[type="radio"] {
+    margin-right: 5px; /* Space between the radio button and label text */
+  }
+  

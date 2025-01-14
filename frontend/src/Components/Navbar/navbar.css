@@ -1,0 +1,83 @@
+/* General navbar styles */
+.navbar {
+   display: flex;
+  justify-content: space-between;
+  align-items: center; 
+  background-color: #333; /* Dark background for navbar */
+  padding: 10px 20px;
+  position: "fixed"; 
+  top : 0;         
+  width: "100%";    
+  z-index: 1000; 
+}
+
+.logo {
+  font-size: 24px;
+  color: white;
+  font-weight: bold;
+}
+
+.div-shopping {
+  position: relative; /* Enables positioning of child elements relative to this container */
+  display: inline-block;
+}
+
+.div-cart {
+  position: absolute; /* Allows positioning relative to .div-shopping */
+  top: -10px; /* Adjust this value to move it further above */
+  right: 7px; /* Adjust this value to move it horizontally */
+  background-color: red; /* Highlight the badge with a color */
+  color: white; /* Make the text stand out */
+  font-size: 12px; /* Adjust the size of the text */
+  font-weight: bold; /* Make the text bold */
+  width: 20px; /* Set a fixed size for the badge */
+  height: 20px;
+  border-radius: 50%; /* Makes it a circular badge */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Adds a subtle shadow */
+}
+
+.div-shopping{
+ 
+  
+
+}
+.nav-links {
+  display: flex;
+  
+  justify-content: flex-end;
+  align-items: center;
+  gap: 15px; /* Spacing between links */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  align-items: center !important;
+}
+
+.nav-links a, .nav-links button {
+  text-decoration: none;
+  font-size: 18px; /* Size of the text */
+  color: white; /* Default color */
+  padding: 5px 10px; /* Padding around text */
+  border: none; /* Remove button border */
+  background: none; /* Remove button background */
+  cursor: pointer; /* Make links and buttons clickable */
+}
+
+.nav-links a:hover, .nav-links button:hover {
+  color: #f39c12; /* Hover color */
+  text-decoration: underline; /* Add underline on hover */
+}
+
+/* Optional: Add button-specific styles if needed */
+.nav-links button {
+  font-size: 18px;
+  color: white;
+  cursor: pointer;
+}
+
+.nav-links button:hover {
+  color: #e74c3c; /* Hover color for buttons */
+}
