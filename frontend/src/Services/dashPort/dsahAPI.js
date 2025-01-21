@@ -2,7 +2,7 @@ import { notification } from 'antd'
 import apiConnect from '../apiConnect';
 //import { UPDATE_USER } from '../../Redux/auth/authSlice';
 import { useDispatch } from 'react-redux';
-import { addProductSuccess, fetchProductsSuccess, updateProductSuccess } from '../../Redux/cart/productSlice';
+import { addProductSuccess, fetchProductsSuccess, updateProductSuccess } from '../../Redux/products/productSlice';
 const dispatch= useDispatch;
   // Fetch and Update User Thunk
 export const fetchAndUpdateItem = async ({id, name, description, price, imageUrl, quantity }) => {

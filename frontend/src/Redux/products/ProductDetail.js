@@ -4,17 +4,17 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { notification } from 'antd';
 import { Box, Typography, Button, CircularProgress } from '@mui/material';
 import { fetchProducts } from './productSlice';
-import { addCart } from '../../Redux/cart/cartAPI';
-//import {addToCart} from '../../Redux/cart/cartSlice'
+import { addCart } from '../cart/cartAPI';
+import { debounce } from 'lodash';
+
 const EventEmitter = require('events');
 let eventEmitter = new EventEmitter();
 
 const ProductDetail = () => {
   const { id } = useParams();
   
-  const products = useSelector((state) => state.products.items || []); // Fallback to empty array
-  const cartItems = useSelector((state) => state.cart.items || []); // Fallback to empty array
-  //const cartItemsz = useSelector((state) => console.log(state));
+  const products = useSelector((state) => state.products.items || []); 
+  const cartItems = useSelector((state) => state.cart.items || []); 
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const users = useSelector((state) => state.auth.user);
   const status = useSelector((state) => state.products.status);
@@ -23,38 +23,42 @@ const ProductDetail = () => {
   
 
   const product = products.find((item) => item._id === id);
-  //console.log('product',product)
-  //console.log('product',product)
+  
+
   const productInCartQuantity = cartItems.reduce((total, item) => {
     if (item?._id === product?._id) {
-      return total + (item.quantity || 0); // Add the quantity if the item matches
+      return total + (item.quantity || 0); 
     }
-    return total; // Otherwise, just return the current total
+    return total; 
   }, 0);
-  //console.log('productInCartQuantity',productInCartQuantity)
+  
  
   
 
   const availableStock = product?.quantity ? product.quantity - productInCartQuantity : 0;
-  //console.log('vavailableStock',availableStock)
+ 
   useEffect(() => {
     if (!product && status === 'idle') {
       dispatch(fetchProducts());
     }
   }, [product, status, dispatch]);
+ 
   useEffect(() => {
-    eventEmitter.on('IncreaseProductTocart', handleAddToCart);
-    //eventEmitter.on('RemoveProductTocart', fetchCartItems);
+    const handleIncrease = debounce(() => {
+      dispatch(fetchProducts());
+    }, 300); // Wait 300ms between calls
+  
+    eventEmitter.on('AddData', handleIncrease);
+  
     return () => {
-        // Cleanup the listener when the component unmounts
-        eventEmitter.removeListener('IncreaseProductTocart', handleAddToCart);
-        //eventEmitter.removeListener('RemoveProductTocart', fetchCartItems);
+      eventEmitter.off('AddData', handleIncrease);
+      handleIncrease.cancel(); // Cancel debounced calls
     };
-}, []);
+  }, [dispatch]);
 
   const handleAddToCart = async () => {
     if (isAuthenticated) {
-      //if (cartItems)
+      
       if (availableStock > 0) {
         try {
         
@@ -62,9 +66,7 @@ const ProductDetail = () => {
             userId: users.id,
             productId: product._id,
             quantity:1}));
-           // console.log(quantity)
-          
-            eventEmitter.emit('myEvent', "First event");
+  
           notification.success({
             message: 'Added to Cart',
             description: `${product.name} has been added to your cart!`,
@@ -90,7 +92,8 @@ const ProductDetail = () => {
       navigate('/signin');
     }
   };
-  const clicking = cartItems.find((cartItem) => cartItem.productId._id === product._id);
+  const clicking = cartItems.find((cartItem) => cartItem?.productId?._id === product?._id);
+  console.log('clicking',clicking);
   
 
   if (status === 'loading') {
@@ -141,10 +144,10 @@ const ProductDetail = () => {
       <Typography variant="body1" sx={{ color: '#555', marginBottom: '20px', fontStyle: 'italic' }}>
         {product.description || 'No description available for this product.'}
       </Typography>
-      <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '20px' }}>
+      <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '20px' ,textAlign:"center"}}>
         Price: ₹{product.price.toFixed(2)}
         <Box component="span" sx={{ marginLeft: '5px', fontWeight: 'normal' }}>
-          <strong>| Stock Left:</strong> {availableStock > 0 ? availableStock : 'Out of Stock'}
+          
         </Box>
       </Typography>
       <Button

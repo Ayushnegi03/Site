@@ -55,10 +55,10 @@ export const fetchAndUpdateUser = async ({id, name, email, contact, address  }) 
       console.error('error',error);
       const errorMessage = error.response?.data?.message || 'Not fetching the data';
      
-      notification.error({
-        message: 'Your Signup Failed please try again',
-        description: errorMessage,
-      });
+      // notification.error({
+      //   message: 'Your Signup Failed please try again',
+      //   description: errorMessage,
+      // });
     }
   }
 // export const addonData=async()=>{

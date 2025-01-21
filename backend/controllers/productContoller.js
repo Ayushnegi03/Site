@@ -1,54 +1,61 @@
-
+//const Debounce = require('lodash');  //debounce
+const Debounce = require('lodash.debounce');
 const mongoose = require('mongoose');
-const Product = require('../Model/product'); // Ensure the path is correct
+const Product = require('../Model/product'); 
 
-// Controller to fetch all products
-// const getProducts = async (req, res) => {
-//     try {
-//         const products = await Product.find(); // Fetch all products
-//         res.status(200).json(products);
-       
-//     } catch (error) {
-//         console.error('Error fetching products:', error);
-//         res.status(500).json({ msg: 'An error occurred while fetching products.' });
-//     }
-// };
-
-const getProducts = async (req, res) => {
+const getProducts =Debounce(async (req, res) => {
+    const { page, limit, search } = req.query;
     try {
-        const { page, limit } = req.query;
-        let products;
-        let totalProducts;
-
+        
+      
         if (page && limit) {
-            
-            const pageNum = parseInt(page, 10) || 1;  // Default to page 1
-            const limitNum = parseInt(limit, 10) || 10; // Default to 10 items per page
+        // Default values for pagination
+        const pageNum = parseInt(page, 10) || 1;  // Default to page 1
+        const limitNum = parseInt(limit, 10) || 10; // Default to 10 items per page
     
-            // Calculate skip value for pagination
-            const skip = (pageNum - 1) * limitNum;
-          
-            const products = await Product.find().skip(skip).limit(limitNum);
-
-            // Get the total count of products
-            const totalProducts = await Product.countDocuments();
-
-            return res.status(200).json({
-                totalProducts,
-                totalPages: Math.ceil(totalProducts / limitNum),
-                currentPage: pageNum,
-                products,
-            });
+        // Calculate skip value for pagination
+        const skip = (pageNum - 1) * limitNum;
+        
+        // Construct the filter object for search
+        const filter = {};
+        if (search) {
+            filter.$or = [
+                { name: { $regex: search, $options: 'i' }},  
+            ];
+        }
+        
+        // Fetch paginated and filtered products
+        const products = await Product.find(filter)
+            .skip(skip)
+            .limit(limitNum);
+        
+     
+        const totalProducts = await Product.countDocuments(filter);
+        
+     
+        return res.status(200).json({
+            totalProducts,
+            totalPages: Math.ceil(totalProducts / limitNum),
+            currentPage: pageNum,
+            products});
         } else {
-            const products = await Product.find(); 
-            //totalProducts = products.length;
+
+            const filter = {};
+            if (search) {
+                filter.$or = [
+                    { name: { $regex: search, $options: 'i' }},  // Case-insensitive match on name
+                // You can add other fields here if necessary
+                ];
+            }
+
+            const products = await Product.find(filter); 
             res.status(200).json(products);
         }
     } catch (error) {
         console.error('Error occurred:', error);
         res.status(500).json({ msg: 'An error occurred while fetching products.' });
     }
-};
+},300);
 
 
 // Controller to create a new product
@@ -82,23 +89,19 @@ const createProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
     try {
         const { productId } = req.params; // Extract product ID from URL
-        console.log('productID',{productId})
         const { name, description, price, imageUrl, quantity, date } = req.body;
-        console.log('productID',{name, description, price, imageUrl, quantity, date})
         const updatedProducting = await Product.findByIdAndUpdate(
             productId,
             { name, description, price, imageUrl, quantity, date:date || new Date() },
             { new: true, runValidators: true }// Return the updated product
         );
-         console.log('---->',updatedProducting)
-         console.log('-=-=-=', { name, description, price, imageUrl, quantity, date:date || new Date() },)
+ 
         if (!updatedProducting) {
             return res.status(404).json({ msg: 'Product not found.' });
         }
 
         res.status(200).json(updatedProducting);
     } catch (error) {
-        console.error('Error updating product:', error);
         res.status(500).json({ msg: 'An error occurred while updating the product.' });
     }
 };
@@ -114,7 +117,10 @@ const deleteProduct = async (req, res) => {
         }
 
         // Find and delete the product by ID
-        const deletedProduct = await Product.findByIdAndDelete(productId);
+        const deletedProduct = await Product.findByIdAndDelete(productId,
+            {isDeleted:true,deletedAt:new Date()},
+            {new:true}
+        );
 
         if (!deletedProduct) {
             return res.status(404).json({ msg: 'Product not found.' });
@@ -126,5 +132,19 @@ const deleteProduct = async (req, res) => {
         res.status(500).json({ msg: 'An error occurred while deleting the product.' });
     }
 };
-
+// const restoreProduct = async (req, res) => {
+//     try {
+//       const { productId } = req.params;
+//       const restoredProduct = await Product.restoreById(productId);
+  
+//       if (!restoredProduct) {
+//         return res.status(404).json({ msg: 'Product not found or already restored' });
+//       }
+  
+//       res.status(200).json({ msg: 'Product restored successfully', product: restoredProduct });
+//     } catch (error) {
+//       console.error('Error restoring product:', error);
+//       res.status(500).json({ msg: 'Error restoring product' });
+//     }
+//   };
 module.exports = { getProducts, createProduct, updateProduct, deleteProduct };

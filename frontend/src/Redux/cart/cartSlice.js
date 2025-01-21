@@ -1,6 +1,6 @@
 
 import {createSlice} from '@reduxjs/toolkit';
-//import axios from 'axios';
+ 
 
 
 const cartSlice = createSlice({
@@ -20,18 +20,18 @@ const cartSlice = createSlice({
           },
         addToCart:(state,action)=>{
             const product=action.payload;
-            // console.log('pro-',product)
+             
 
             if (!product || !product._id) {
                 console.error('Invalid product added to cart:', product);
-                return; // Skip if product is invalid
+                return;  
               }
             const existingItem=state.items.find((item)=>item._id===product._id)
             if (existingItem){
                 existingItem.quantity+=1;
             }
             else{
-                //state.items.push({...product,quantity:1})            
+                           
                 state.items.push({ ...product, quantity: 1 });
             }
         },

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { fetchAndUpdateUser } from '../../Services/auth/authAPI';
-import { Card } from 'antd';
+import { Card,Form,Input,Button, Row, Col, Spin } from 'antd';
 const ProfilePage = () => {
   const { user, error } = useSelector((state) => state.auth);
   const [formData, setFormData] = useState({
@@ -12,7 +12,7 @@ const ProfilePage = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   useEffect(() => {
-    // console.log('user',user)
+    
     if (user) {
       setFormData({
         id:user.id,
@@ -22,38 +22,50 @@ const ProfilePage = () => {
         contact: user.contact || ' ',
       });
     }
-  else {
-    setFormData({
-      name: 'John Doe',
-      email: 'johndoe@example.com',
-      address: '123 Main Street, Hometown',
-      contact: '1234567890',
-    });
-  }
+  
 }, [user]);
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-  const handleSubmit = async(e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+    //e.preventDefault();
     setIsSubmitting(true);
+  
+    // Basic validation
+    if (!formData.name || !formData.email) {
+      alert("Name and Email are required.");
+      setIsSubmitting(false);
+      return;
+    }
+  
     try {
       await fetchAndUpdateUser(formData);
-      console.log('User updated successfully!');
+      console.log("User updated successfully!");
+      alert("User updated successfully!");
     } catch (err) {
-      console.error('Failed to update user:', err);
-      // Optionally, handle the error differently if needed
+      console.error("Failed to update user:", err.message || err);
+      alert("Failed to update user. Please try again.");
     } finally {
-      setIsSubmitting(false); // Always reset submitting state
+      setIsSubmitting(false);
     }
   };
+  
   return (
-    <Card>
-      <h1>{user ? 'Edit Profile' : 'Create Profile'}</h1>
-      <form className="profile-form" onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="name">Name:</label>
-          <input
+   
+   <div style={{backgroundColor: "#FAF9F6",}}>
+    <Row justify="center" align="middle" style={{ minHeight: '80vh' }}>
+      <Col xs={24} sm={18} md={12} lg={8}>
+        <Card bordered={false} style={{ padding: '20px' }}>
+          <h1 style={{ textAlign: 'center' }}>{user ? 'Edit Profile' : 'Create Profile'}</h1>
+          <Spin spinning={isSubmitting}>
+            <Form
+              layout="vertical"
+              initialValues={formData}
+              onFinish={handleSubmit}
+            >
+            <div className="form-group">
+           <label htmlFor="name">Name:</label>
+           <input
             type="text"
             id="name"
             name="name"
@@ -96,16 +108,31 @@ const ProfilePage = () => {
             name="contact"
             value={formData.contact}
             onChange={handleChange}
+            // style={{marginRight:"12px"}}
             placeholder="Enter contact"
             required
           />
         </div>
-        <button type="submit" className="submit-button" disabled={isSubmitting}>
-          {isSubmitting ? 'Saving...' : 'Save Changes'}
-        </button>
-      </form>
-      {error && <p className="error-message">{error}</p>}
-    </Card>
+              <Form.Item>
+              <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                style={{ width: '50%' }}
+                loading={isSubmitting}
+                disabled={isSubmitting}
+                >
+              {isSubmitting ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
+              </Form.Item>
+            </Form>
+          </Spin>
+          {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+        </Card>
+      </Col>
+    </Row>
+    </div>
   );
 };
 export default ProfilePage;
