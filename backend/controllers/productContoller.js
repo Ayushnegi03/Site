@@ -132,19 +132,34 @@ const deleteProduct = async (req, res) => {
         res.status(500).json({ msg: 'An error occurred while deleting the product.' });
     }
 };
-// const restoreProduct = async (req, res) => {
-//     try {
-//       const { productId } = req.params;
-//       const restoredProduct = await Product.restoreById(productId);
-  
-//       if (!restoredProduct) {
-//         return res.status(404).json({ msg: 'Product not found or already restored' });
-//       }
-  
-//       res.status(200).json({ msg: 'Product restored successfully', product: restoredProduct });
-//     } catch (error) {
-//       console.error('Error restoring product:', error);
-//       res.status(500).json({ msg: 'Error restoring product' });
-//     }
-//   };
-module.exports = { getProducts, createProduct, updateProduct, deleteProduct };
+
+const additionProducts = async (req, res) => {
+    try {
+        const { productId } = req.params; // Extract product ID from URL
+        const { name, description, price, imageUrl, quantity, date } = req.body;
+
+        // Find the product and increment the quantity by 1
+        const updatedProducting = await Product.findByIdAndUpdate(
+            productId,
+            {
+                name,
+                description,
+                price,
+                imageUrl,
+                $inc: { quantity: 1 },  // Increment quantity by 1
+                date: date || new Date()
+            },
+            { new: true, runValidators: true } // Return the updated product
+        );
+
+        if (!updatedProducting) {
+            return res.status(404).json({ msg: 'Product not found.' });
+        }
+
+        res.status(200).json(updatedProducting);
+    } catch (error) {
+        res.status(500).json({ msg: 'An error occurred while updating the product.', error: error.message });
+    }
+};
+
+module.exports = { getProducts, createProduct, updateProduct, deleteProduct,additionProducts  };

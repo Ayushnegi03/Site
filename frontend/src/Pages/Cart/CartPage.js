@@ -1,8 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { notification } from "antd";
 import { useSelector, useDispatch } from "react-redux";
-import {getCart,updateCart,removeCart,} from "../../Redux/cart/cartAPI";
+import {getCart,updateCart,removeCart,addonCart} from "../../Redux/cart/cartAPI";
 import { Box, Typography, Button } from "@mui/material";
+
 
 import eventEmitter from "../../Utils/handlingEvents";
 const CartPage = () => {
@@ -13,6 +15,7 @@ const CartPage = () => {
   const dispatch = useDispatch();
  
   const [loadings,setLoadings] = useState(false);
+
   const total = useMemo(() => {
     return cartItems.reduce((sum, item) => {
       const price = item?.productId?.price || 0; 
@@ -21,11 +24,30 @@ const CartPage = () => {
     }, 0);
   }, [cartItems]);
 
-  const fetchCartItems = () => {
-    if (!isAuthenticated) return;
+  // const fetchCartItems = () => {
+  //   if (!isAuthenticated) return;
+  //   try {
+  //     setLoadings(true);
+  //     //eventEmitter.emit("getCart", { userId: users.id });
+  //     console.log('This is the showing-----')
+  //     dispatch(getCart(users?.id));
+  //   } catch (error) {
+  //     console.error("Error fetching cart items:", error);
+  //     notification.error({
+  //       message: "Error",
+  //       description: "Failed to fetch cart items.",
+  //     });
+  //   }
+  //   setLoadings(false);
+  // };
+
+  const fetchCartItems = useCallback(() => {
+    if (!isAuthenticated || !users?.id) return;
+    
     try {
-      // eventEmitter.emit("getCart", { userId: users.id });
-      dispatch(getCart(users.id));
+      setLoadings(true);
+      console.log('Fetching cart items for user:', users?.id);
+      dispatch(getCart(users?.id));
     } catch (error) {
       console.error("Error fetching cart items:", error);
       notification.error({
@@ -33,9 +55,10 @@ const CartPage = () => {
         description: "Failed to fetch cart items.",
       });
     }
-  };
+    setLoadings(false);
+  }, [isAuthenticated, users?.id, dispatch]);
 
-  const handleAddToCart = async (item) => {
+const handleAddToCart = async (item,userId,productId) => {
     if (!isAuthenticated) {
       notification.error({
         message: "Login Required",
@@ -45,21 +68,22 @@ const CartPage = () => {
     }
     try {
       setLoadings(true);
+     
       const existingItem = cartItems.find(
         (cartItem) => cartItem?.productId?._id === item?.productId?._id
-      );         
-    
-    if (existingItem) {
-     
-      const updatedItem = {
-        ...existingItem,
-        quantity: existingItem?.quantity + 1,
-      };
-      dispatch(updateCart(updatedItem)); 
-      
+      );        
+      if (existingItem) {
+        // Corrected: Passing an object with userId, productId, and quantity
+        console.log('Here is to addition --------', userId, item);
+        dispatch(addonCart({ userId:item.userId, productId: item.productId._id, quantity: 1 }));
+        console.log('Here is to addition ---->>>>----');
+      } else {
+        // Corrected: Passing an object with userId, productId, and quantity 1
+        dispatch(addonCart({ userId, productId: item.productId._id, quantity: 1 }));
+      }
     } 
-   
-    } catch (error) {
+    catch (error) 
+    {
       console.error("Error adding item to cart:", error);
       notification.error({
         message: "Error",
@@ -67,6 +91,7 @@ const CartPage = () => {
       });
     }
     setLoadings(false);
+    
   };
 
   useEffect(() => {
@@ -76,6 +101,7 @@ const CartPage = () => {
 
 
   useEffect(() => {
+    console.log('Here is to adding')
     eventEmitter.on('IncreaseProductTocart', fetchCartItems);
     eventEmitter.on('RemoveProductTocart', fetchCartItems);
     return () => {
@@ -95,11 +121,12 @@ const CartPage = () => {
       if (existingItem) {
         if (existingItem.quantity > 1) {
          
-          const updatedItem = {
-            ...existingItem,
-            quantity: existingItem.quantity - 1,
-          };
-          dispatch(updateCart(updatedItem)); 
+          // const updatedItem = {
+          //   ...existingItem,
+          //   quantity: existingItem.quantity - 1,
+          // };
+        dispatch(updateCart({ userId:item.userId, productId: item.productId._id, quantity: 1 }));
+         // dispatch(updateCart()); 
         } else {
          
           handleRemoveFromCart(existingItem);
@@ -196,69 +223,69 @@ const CartPage = () => {
                 </Box>
 
                 <Box
-  sx={{
-    display: "flex",
-    justifyContent: "center",
-    gap: "10px",
-    marginTop: "10px",
-  }}
->
-  <Button
-    onClick={() => handleDecreaseItemCart(item)}
-    sx={{
-      fontWeight: "bold",
-      color: "#fff",
-      background: "#36454F",
-      boxShadow: "0 4px 8px rgba(255, 138, 0, 0.4)",
-      "&:hover": {
-        background: "#0096FF",
-        boxShadow: "0 6px 12px rgba(255, 87, 34, 0.5)",
-      },
-      padding: "10px 20px",
-      borderRadius: "50px",
-      minWidth: "50px",
-    }}
-  >
-    -
-  </Button>
-  <Button
-    onClick={() => handleRemoveFromCart(item)}
-    sx={{
-      fontWeight: "bold",
-      color: "#D32F2F",
-      backgroundColor: "#FFFFFF",
-      border: "2px solid #E57373",
-      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-      "&:hover": {
-        backgroundColor: "#FFEBEE",
-        borderColor: "#C62828",
-        boxShadow: "0 4px 8px rgba(244, 67, 54, 0.3)",
-      },
-      padding: "10px 20px",
-      borderRadius: "12px",
-    }}
-  >
-    Remove
-  </Button>
-  <Button
-    onClick={() => handleAddToCart(item)}
-    sx={{
-      fontWeight: "bold",
-      color: "#fff",
-      background: "#36454F",
-      boxShadow: "0 4px 8px rgba(109, 242, 244, 0.4)",
-      "&:hover": {
-        background: "#0096FF",
-        boxShadow: "0 6px 12px rgba(76, 175, 80, 0.5)",
-      },
-      padding: "10px 20px",
-      borderRadius: "50px",
-      minWidth: "50px",
-    }}
-  >
-    +
-  </Button>
-</Box>
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: "10px",
+                  marginTop: "10px",
+                  }}
+                >
+                <Button
+                onClick={() => handleDecreaseItemCart(item)}
+                sx={{
+                fontWeight: "bold",
+                color: "#fff",
+                background: "#36454F",
+                boxShadow: "0 4px 8px rgba(255, 138, 0, 0.4)",
+                "&:hover": {
+                background: "#0096FF",
+                boxShadow: "0 6px 12px rgba(255, 87, 34, 0.5)",
+                },
+                padding: "10px 20px",
+                borderRadius: "50px",
+                minWidth: "50px",
+                }}
+              >
+              -
+            </Button>
+            <Button
+              onClick={() => handleRemoveFromCart(item)}
+              sx={{
+              fontWeight: "bold",
+              color: "#D32F2F",
+              backgroundColor: "#FFFFFF",
+              border: "2px solid #E57373",
+              boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+              "&:hover": {
+              backgroundColor: "#FFEBEE",
+              borderColor: "#C62828",
+              boxShadow: "0 4px 8px rgba(244, 67, 54, 0.3)",
+              },
+              padding: "10px 20px",
+              borderRadius: "12px",
+               }}
+                >
+              Remove
+            </Button>
+            <Button
+          onClick={() => handleAddToCart(item)}
+          sx={{
+            fontWeight: "bold",
+            color: "#fff",
+            background: "#36454F",
+            boxShadow: "0 4px 8px rgba(109, 242, 244, 0.4)",
+            "&:hover": {
+            background: "#0096FF",
+            boxShadow: "0 6px 12px rgba(76, 175, 80, 0.5)",
+            },
+            padding: "10px 20px",
+            borderRadius: "50px",
+            minWidth: "50px",
+            }}
+            >
+            +
+          </Button>
+          </Box>
 
               </Box>
        

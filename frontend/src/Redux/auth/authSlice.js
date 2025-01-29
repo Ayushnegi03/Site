@@ -1,6 +1,7 @@
 
 
 
+
 import { createSlice} from '@reduxjs/toolkit';
 // Utility functions for localStorage
 const saveToLocalStorage = (key, value) => localStorage.setItem(key, JSON.stringify(value));
@@ -17,7 +18,6 @@ const isTokenExpired = (token) => {
     return true; // In case of any error while decoding, treat it as expired
   }
 };
-
 
 // Initial state
 const initialState = {
@@ -37,7 +37,7 @@ const authSlice = createSlice({
       // Save to Redux state
       localStorage.setItem('token', token);
       saveToLocalStorage('user', user);
-      console.log(token)
+     
       state.user = user;
       state.isAuthenticated = true;
       state.error = null;
@@ -50,15 +50,25 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
       state.error = null;
     },
+
+    UPDATE_USER:(state,action)=>{
+      
+      if (action.payload && typeof action.payload === 'object') {
+        const { user } = action.payload;
+        // Update user in the Redux state
+        state.user = { ...(state.user || {}), ...(user || {}) };        
+        console.log('UJPDATE',state.user)
+      } else {
+        console.error('Invalid payload for UPDATE_USER:', action.payload);
+      }
+    },
+
     authFailure: (state, action) => {
       state.error = action.payload;
 
       // Clear localStorage on failure if needed
       removeFromLocalStorage('token');
       removeFromLocalStorage('user');
-    },
-    UPDATE_USER:(state,action)=>{
-      state.user={...state.user, ...action.payload}
     },
     LOGOUT: (state) => {
       // Clear localStorage when logging out

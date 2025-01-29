@@ -2,7 +2,7 @@
 
 import { notification } from 'antd';
 import apiConnect from '../../Services/apiConnect';
-import { setCartItems, addToCart, removeFromCart, decreaseItemCart ,cartQuantity} from './cartSlice';
+import { setCartItems, addToCart, removeFromCart,cartQuantity} from './cartSlice';
 import eventEmitter from '../../Utils/handlingEvents';
 
 // Add product to cart
@@ -13,9 +13,9 @@ export const addCart = ({ userId, productId, quantity }) => async (dispatch) => 
       productId,
       quantity
     });
-        dispatch(addToCart({response}));
-  
-    eventEmitter.emit('IncreaseProductTocart');
+    dispatch(addToCart({response}));
+    console.log('response',response);
+    // eventEmitter.emit('IncreaseProductTocart');
   } catch (error) {
     console.error('Error adding product to cart:', error);
     notification.error({
@@ -29,12 +29,7 @@ export const addCart = ({ userId, productId, quantity }) => async (dispatch) => 
 export const getCart = (userId) => async (dispatch) => {
 
   try {
-    const response = await apiConnect.get(`/cart/${userId}`); // Dynamically insert userId
-    // notification.success({
-    //   message: 'Cart Loaded',
-    //   description: 'Your cart has been successfully loaded.',
-    // });
-   
+    const response = await apiConnect.get(`/cart/${userId}`); 
     dispatch(setCartItems( response?.data?.cartItems));
     dispatch(cartQuantity(response?.data?.cartItems?.length))
 
@@ -50,13 +45,18 @@ export const getCart = (userId) => async (dispatch) => {
  
 export const updateCart = ({ userId, productId, quantity }) => async (dispatch) => {
   try {
+    
     const response = await apiConnect.put(`/cart/update`, {
       userId,
       productId,
       quantity,
     });
-    
+    console.log('response',response)
     eventEmitter.emit('IncreaseProductTocart');
+    notification.success({
+      message: 'Cart updated',
+      description: 'Product successfully decrement from cart.',
+    });
   } catch (error) {
     console.error('Error updating cart:', error);
     notification.error({
@@ -65,7 +65,31 @@ export const updateCart = ({ userId, productId, quantity }) => async (dispatch) 
     });
   }
 };
-
+export const addonCart = ({ userId, productId, quantity }) => async (dispatch) => {
+  
+  
+  try {
+    console.log('--->',{ userId, productId, quantity })
+    
+    const response = await apiConnect.put(`/cart/addon`, {
+      userId,
+      productId,
+      quantity,
+    });
+    console.log('response--->',response)
+    eventEmitter.emit('IncreaseProductTocart');
+    notification.success({
+      message: 'Cart Added',
+      description: 'Product successfully incremented from cart.',
+    });
+  } catch (error) {
+    console.error('Error updating cart:', error);
+    notification.error({
+      message: 'Update Cart Failed',
+      description: error.message || 'Something went wrong.',
+    });
+  }
+};
 
 export const removeCart = ({ userId, productId }) => async (dispatch) => {
   console.log('once',productId)

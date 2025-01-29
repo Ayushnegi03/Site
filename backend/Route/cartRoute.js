@@ -5,6 +5,7 @@ const {
   updateCart,
   removeFromCart,
   clearCart,
+  addonCart
 } = require('../controllers/cartcontoller');
 
 const router = express.Router();
@@ -17,6 +18,9 @@ router.get('/:userId', getCart);
 
 // Route to update a product quantity in the cart
 router.put('/update', updateCart);
+
+
+router.put ('/addon',addonCart);
 
 // Route to remove a product from the cart
 router.delete('/remove', removeFromCart);

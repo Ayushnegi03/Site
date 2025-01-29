@@ -63,26 +63,46 @@ const updateCart = async (req, res) => {
   const { userId, productId, quantity } = req.body;
 
   try {
-    const cartItem = await Cart.findOne({ userId, productId });
+    // Find the specific cart item
+    let cartItem = await Cart.findOne({ userId, productId });
 
     if (!cartItem) {
-      return res.status(404).json({ message: 'Product not found in cart.' });
+      return res.status(404).json({
+        error: 'Product not found in cart.',
+      });
     }
 
-    if (quantity > 0) {
-      // Update the quantity if it's greater than 0
-      cartItem.quantity = quantity;
-      await cartItem.save();
-      res.status(200).json({ message: 'Cart updated successfully.', cartItem });
-    } else {
-      // Remove the cart item if quantity is 0 or less
-      await cartItem.remove();
-      res.status(200).json({ message: 'Product removed from cart.' });
+    // Handle quantity decrementing: Only decrement if quantity is greater than 1, or remove item if quantity becomes 0 or less
+    if (quantity < 1) {
+      // Remove item from cart if quantity goes below 1
+      await Cart.deleteOne({ userId, productId });
+      return res.status(200).json({
+        message: 'Product removed from cart.',
+      });
     }
+
+    // Decrement the quantity by the value provided
+    cartItem.quantity -= quantity;
+
+    // Ensure that quantity doesn't become negative
+    if (cartItem.quantity < 1) {
+      cartItem.quantity = 1; // Prevent negative quantity; optional based on your requirements
+    }
+
+    await cartItem.save();
+
+    // Retrieve the updated cart
+    const updatedCart = await Cart.find({ userId });
+
+    res.status(200).json({
+      message: 'Cart updated successfully.',
+      updatedCart
+    });
   } catch (error) {
     console.error('Error updating cart:', error);
     res.status(500).json({ error: 'Failed to update cart.' });
   }
+  
 };
 
 // Remove a product from the cart
@@ -127,10 +147,56 @@ const clearCart = async (req, res) => {
   }
 };
 
+
+
+const addonCart = async (req, res) => {
+  const { userId, productId, quantity } = req.body;
+   console.log('{ userId, productId, quantity }',{ userId, productId, quantity })
+  // Validate required fields
+  if (!userId || !productId) {
+    return res.status(400).json({
+      error: 'User ID and Product ID are required.',
+    });
+  }
+  try {
+    // Find the specific cart item
+    let cartItem = await Cart.findOne({ userId, productId });
+    if (!cartItem) {
+      // If the product is not in the cart, add it with the provided quantity or default to 1
+      cartItem = new Cart({
+        userId,
+        productId,
+        quantity: quantity || 1, // Default to 1 if quantity is not provided
+      });
+      await cartItem.save();
+      return res.status(201).json({
+        message: 'Product added to cart.',
+        cartItem,
+      });
+    }
+    // Increment the quantity by the provided value or default to 1
+    cartItem.quantity += quantity || 1;
+    await cartItem.save();
+    // Retrieve the updated cart
+    const updatedCart = await Cart.find({ userId });
+
+    res.status(200).json({
+      message: 'Cart updated successfully.',
+      updatedCart
+    });
+  } catch (error) {
+    console.error('Error updating cart:', error);
+    res.status(500).json({ error: 'Failed to update cart.' });
+  }
+};
+
+
+
 module.exports = {
   addToCart,
   getCart,
   updateCart,
   removeFromCart,
   clearCart,
+  addonCart
 };

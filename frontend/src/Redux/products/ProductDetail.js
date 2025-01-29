@@ -5,7 +5,7 @@ import { notification } from 'antd';
 import { Box, Typography, Button, CircularProgress } from '@mui/material';
 import { fetchProducts } from './productSlice';
 import { addCart } from '../cart/cartAPI';
-import { debounce } from 'lodash';
+
 
 const EventEmitter = require('events');
 let eventEmitter = new EventEmitter();
@@ -13,7 +13,8 @@ let eventEmitter = new EventEmitter();
 const ProductDetail = () => {
   const { id } = useParams();
   
-  const products = useSelector((state) => state.products.items || []); 
+  const producting = useSelector((state) => state.products.items || []); 
+
   const cartItems = useSelector((state) => state.cart.items || []); 
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const users = useSelector((state) => state.auth.user);
@@ -22,7 +23,8 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   
 
-  const product = products.find((item) => item._id === id);
+  const product = producting.find((item) => item._id === id);
+  
   
 
   const productInCartQuantity = cartItems.reduce((total, item) => {
@@ -38,21 +40,17 @@ const ProductDetail = () => {
   const availableStock = product?.quantity ? product.quantity - productInCartQuantity : 0;
  
   useEffect(() => {
-    if (!product && status === 'idle') {
-      dispatch(fetchProducts());
-    }
-  }, [product, status, dispatch]);
- 
-  useEffect(() => {
-    const handleIncrease = debounce(() => {
-      dispatch(fetchProducts());
-    }, 300); // Wait 300ms between calls
-  
-    eventEmitter.on('AddData', handleIncrease);
-  
+    const handleIncrease = async() => {
+      
+      await dispatch(fetchProducts());
+    };
+    
+    // Register the event listener
+    eventEmitter.on("AddData", handleIncrease);
+
+    // Cleanup the event listener on component unmount or dependency change
     return () => {
-      eventEmitter.off('AddData', handleIncrease);
-      handleIncrease.cancel(); // Cancel debounced calls
+      eventEmitter.removeListener("AddData", handleIncrease);
     };
   }, [dispatch]);
 
@@ -62,7 +60,7 @@ const ProductDetail = () => {
       if (availableStock > 0) {
         try {
         
-          dispatch(addCart({
+          await dispatch(addCart({
             userId: users.id,
             productId: product._id,
             quantity:1}));
@@ -71,6 +69,7 @@ const ProductDetail = () => {
             message: 'Added to Cart',
             description: `${product.name} has been added to your cart!`,
           });
+          navigate('/cart');
         } catch (error) {
           console.error('Error adding to cart:', error);
           notification.error({
@@ -92,8 +91,11 @@ const ProductDetail = () => {
       navigate('/signin');
     }
   };
-  const clicking = cartItems.find((cartItem) => cartItem?.productId?._id === product?._id);
+  const clicking =  cartItems.find((cartItem) => cartItem?.productId?._id === product?._id);
+  
   console.log('clicking',clicking);
+    console.log('product',product._id);
+  console.log('cartItems',cartItems);
   
 
   if (status === 'loading') {

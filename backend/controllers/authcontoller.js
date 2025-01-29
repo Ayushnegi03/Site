@@ -87,8 +87,8 @@ auth.post('/login', async (req, res) => {
 auth.put('/profile/:id', async (req, res) => {
     try {
       const { id } = req.params; // Extract user ID from the URL
-      const { name, email, address, contact ,role } = req.body; // Extract data from the request body
-      console.log(">>>>>>name, email, address, contact",name, email, address, contact,role);
+      const { name, email, address, contact  } = req.body; // Extract data from the request body
+      console.log(">>>>>>name, email, address, contact",name, email, address, contact,);
       // Validate input
       if (!name || !email || !address || !contact ) {
         return res.status(400).json({ msg: 'All fields are required' });
@@ -96,11 +96,12 @@ auth.put('/profile/:id', async (req, res) => {
       // Find the user by ID and update their profile
       const updatedUser = await User.findByIdAndUpdate(
         id,
-        { name, email, address, contact ,role }, // Update fields
+        { name, email, address, contact  }, // Update fields
         { new: true } // Return the updated document
       );
-       console.log('-==--=-==-',updatedUser)
-      // Check if the user exists
+       console.log('-==--=-==-',updatedUser);;
+       console.log('-==--=-==-id',{id})
+     
       if (!updatedUser) {
         return res.status(404).json({ msg: 'User not found' });
       }
