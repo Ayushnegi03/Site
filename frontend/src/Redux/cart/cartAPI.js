@@ -13,14 +13,9 @@ export const addCart = ({ userId, productId, quantity }) => async (dispatch) => 
       productId,
       quantity
     });
-    
+        dispatch(addToCart({response}));
+  
     eventEmitter.emit('IncreaseProductTocart');
-    dispatch(addToCart({response}));
-    notification.success({
-      message: 'Cart Updated',
-      description: 'Product successfully added to the cart.',
-    });
-
   } catch (error) {
     console.error('Error adding product to cart:', error);
     notification.error({
@@ -39,6 +34,7 @@ export const getCart = (userId) => async (dispatch) => {
     //   message: 'Cart Loaded',
     //   description: 'Your cart has been successfully loaded.',
     // });
+   
     dispatch(setCartItems( response?.data?.cartItems));
     dispatch(cartQuantity(response?.data?.cartItems?.length))
 
@@ -51,7 +47,7 @@ export const getCart = (userId) => async (dispatch) => {
   }
 };
 
-// Update product quantity in cart
+ 
 export const updateCart = ({ userId, productId, quantity }) => async (dispatch) => {
   try {
     const response = await apiConnect.put(`/cart/update`, {
@@ -59,12 +55,8 @@ export const updateCart = ({ userId, productId, quantity }) => async (dispatch) 
       productId,
       quantity,
     });
-   eventEmitter.emit('IncreaseProductTocart');
-    dispatch(decreaseItemCart({ productId, quantity })); // Update with correct payload
-    notification.success({
-      message: 'Cart Updated',
-      description: 'Product quantity successfully updated.',
-    });
+    
+    eventEmitter.emit('IncreaseProductTocart');
   } catch (error) {
     console.error('Error updating cart:', error);
     notification.error({
@@ -74,18 +66,19 @@ export const updateCart = ({ userId, productId, quantity }) => async (dispatch) 
   }
 };
 
-// Remove product from cart
+
 export const removeCart = ({ userId, productId }) => async (dispatch) => {
   console.log('once',productId)
   try {
-    //console.log('two')
-    const response = await apiConnect.delete(`/cart/remove`,{data: { userId, productId:productId._id }, });
-    eventEmitter.emit('RemoveProductTocart');
+    
+    const response = await apiConnect.delete(`/cart/remove`,{data: { userId, productId:productId?._id }, });
+    
     dispatch(removeFromCart({productId} )); // Pass correct payload
     notification.success({
       message: 'Cart Updated',
       description: 'Product successfully removed from cart.',
     });
+    eventEmitter.emit('RemoveProductTocart');
   } catch (error) {
     console.error('Error removing product from cart:', error);
     notification.error({

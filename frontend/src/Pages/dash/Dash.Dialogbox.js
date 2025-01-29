@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Form, Input, Button, message } from "antd";
-import { addProduct } from "../../Redux/cart/productSlice"; // Import addProduct function
+import { addProduct } from "../../Redux/products/productSlice"; // Import addProduct function
 import { useDispatch } from "react-redux";
 
 const ProductDialog = ({ isOpen, onClose, onSubmit, initialValues }) => {
@@ -21,7 +21,7 @@ const ProductDialog = ({ isOpen, onClose, onSubmit, initialValues }) => {
       console.log("Form Values:", values);
 
       // Dispatch addProduct to Redux
-      const result = await dispatch(addProduct(values)) // Using unwrap to handle potential async thunks
+      const result = await addProduct(values) // Using unwrap to handle potential async thunks
       console.log("Redux Result:", result);
 
       message.success("Product added successfully!");

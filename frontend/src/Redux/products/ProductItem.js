@@ -4,8 +4,9 @@ import './ProductGrid.css';
 import { Box, Stack, Divider, Grid } from '@mui/material';
 
 const ProductItem = ({product}) => {
+
   const navigate = useNavigate();
-  
+    
   const navigateToDetails = () => {
     navigate(`/product/${product._id}`);
   };
@@ -38,7 +39,7 @@ const ProductItem = ({product}) => {
               <img
                 className="product-image"
                 src={product.imageUrl}
-                alt={product.name || 'Product Image'}
+                alt={product?.name || 'Product Image'}
                 style={{
                   width: '100%',
                   height: '90%',
@@ -46,18 +47,25 @@ const ProductItem = ({product}) => {
                   borderRadius: '4px',
                 }}
               />
-              <h2 className="product-title"
-             
-              style={{ cursor: 'pointer', margin: '10px 0',maxHeight: '320px', maxWeight: '150px',
-                textSize: 'fit-content',
+              
+              <h3
+                className="product-description"
+                style={{
+                  cursor: 'pointer',
+                  color: '#333',
+                  fontWeight: 'bold',
+                  fontSize: '14px',
+                  height:'auto',
+                  textSize: 'fit-content',
               
                 whiteSpace: 'nowrap', 
                 position: 'relative', 
-               
-               }}>
-                {product.name}
-              </h2>
-              <p
+                }}
+              >
+                {product?.name}
+                
+              </h3>
+              <h3
                 className="product-description"
                 style={{
                   cursor: 'pointer',
@@ -67,8 +75,9 @@ const ProductItem = ({product}) => {
                   height:'auto',
                 }}
               >
-                ₹{product.price.toFixed(2)}
-              </p>
+                ₹{product?.price}
+                
+              </h3>
             </div>
            
           </Box>

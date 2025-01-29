@@ -56,32 +56,21 @@ const AuthForm = () => {
       setError('Password must be at least 6 characters long.');
       return;
     }
-    // if (role === 'admin')
-    // {
-    //   notification.success({
-    //     message: 'You switch to admin mode',
-    //     description: 'Please sign up to continue.',
-    //   });
-
-    // }
+ 
     if (isSignUp && password !== confirmPassword) {
       setError('Passwords do not match.');
       return;
     }
     setLoading(true);
     try {
-      // const payload = {
-      //   email,
-      //   password,
-      //   ...(isSignUp && { username, role }), // Include role only for signup
-      // };
+      
       const response = isSignUp
         ? await signUp({ username , email,password,...({ username, role }) })
         : await signIn({ email, password });
-      //console.log(response)
+    
       if (response?.data?.token || response?.data?.user) {
         if (isSignUp) {
-          //localStorage.setItem('token', response?.data?.token);
+         
           notification.success({
             message: 'Sign Up Successful',
             description: 'Please sign in to continue.',

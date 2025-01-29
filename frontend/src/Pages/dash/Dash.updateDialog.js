@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Modal, Form, Input, Button, message } from "antd";
 import { useDispatch } from "react-redux";
-import { addProduct, updateProduct, fetchProducts } from "../../Redux/cart/productSlice";
+import { addProduct, updateProduct, fetchLimitProducts } from "../../Redux/products/productSlice";
 
 const ProductDialog = ({ isOpen, onClose, initialValues }) => {
   const dispatch = useDispatch();
@@ -28,16 +28,16 @@ const ProductDialog = ({ isOpen, onClose, initialValues }) => {
           ...values, // Updated form values
         };
 
-        await dispatch(updateProduct(updatedProduct._id, updatedProduct)); // Dispatch update
+        await updateProduct(updatedProduct._id, updatedProduct); // Dispatch update
         message.success("Product updated successfully!");
       } else {
         // Handle adding new product
-        await dispatch(addProduct(values)); // Dispatch add
+        await addProduct(values); // Dispatch add
         message.success("Product added successfully!");
       }
       
       // Refresh the product list after adding or updating
-      await dispatch(fetchProducts());
+       //dispatch(fetchLimitProducts());
       onClose(); // Close the modal after submission
     } catch (error) {
       console.error("Failed to submit product:", error);

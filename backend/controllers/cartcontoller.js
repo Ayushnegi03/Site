@@ -4,8 +4,7 @@ const Product = require('../Model/product'); // Import the product model
 
 const addToCart = async (req, res) => {
   const { userId, productId, quantity } = req.body;
-  console.log('---+---0',{ userId, productId, quantity})
-  console.log("userId",typeof(userId))
+ 
   try {
     // Check if the product exists
     const product = await Product.findById(productId);
@@ -14,7 +13,7 @@ const addToCart = async (req, res) => {
       return res.status(404).json({ message: 'Product not found.' });
     }
 
-    // Check if the cart entry for the product already exists for the user
+   
     let cartItem = await Cart.findOne({ userId, productId });
     console.log('====',cartItem)
     if (cartItem) {
@@ -25,9 +24,9 @@ const addToCart = async (req, res) => {
       
      
     }
-    console.log('====>',cartItem)
+    // console.log('====>',cartItem)
     cartItem = new Cart({ userId, productId, quantity });
-    console.log('====+',cartItem)
+    // console.log('====+',cartItem)
     await cartItem.save();
     res.status(200).json({ message: 'Product added to cart.', cartItem });
   } catch (error) {
@@ -51,7 +50,7 @@ const getCart = async (req, res) => {
     // if (!cartItems.length) {
     //   return res.status(404).json({ message: 'Cart is empty.' });
     // }
-
+//console.log(">>>>>>>>>>>>>cartItems",cartItems);
     res.status(200).json({ cartItems });
   } catch (error) {
     console.error('Error fetching cart:', error);

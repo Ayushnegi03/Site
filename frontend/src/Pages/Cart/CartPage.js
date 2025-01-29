@@ -1,24 +1,25 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { notification } from "antd";
 import { useSelector, useDispatch } from "react-redux";
 import {getCart,updateCart,removeCart,} from "../../Redux/cart/cartAPI";
 import { Box, Typography, Button } from "@mui/material";
-//const EventEmitter = require('events');
+
 import eventEmitter from "../../Utils/handlingEvents";
-//let eventEmitter = new EventEmitter();
-
-
 const CartPage = () => {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const cartItems = useSelector((state) => state.cart.items);
-  //console.log('cartItem',cartItems)
+  
   const users = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
-  // Fetch cart items from the backend when the component mounts
-  const total = useMemo(
-    () => cartItems.reduce((sum, item) => sum + item.productId.price * item.quantity, 0),
-    [cartItems]
-  );
+ 
+  const [loadings,setLoadings] = useState(false);
+  const total = useMemo(() => {
+    return cartItems.reduce((sum, item) => {
+      const price = item?.productId?.price || 0; 
+      const quantity = item?.quantity || 0;     
+      return sum + price * quantity;
+    }, 0);
+  }, [cartItems]);
 
   const fetchCartItems = () => {
     if (!isAuthenticated) return;
@@ -43,25 +44,21 @@ const CartPage = () => {
       return;
     }
     try {
+      setLoadings(true);
       const existingItem = cartItems.find(
-        (cartItem) => cartItem.productId._id === item.productId._id
+        (cartItem) => cartItem?.productId?._id === item?.productId?._id
       );         
-    // eventEmitter.emit('addCart', item);
+    
     if (existingItem) {
-      // Update the quantity immutably
+     
       const updatedItem = {
         ...existingItem,
-        quantity: existingItem.quantity + 1,
+        quantity: existingItem?.quantity + 1,
       };
-      dispatch(updateCart(updatedItem)); // Ensure this updates the state properly
+      dispatch(updateCart(updatedItem)); 
       
-    } else {
-      // Add new item with quantity 1
-      const newItem = { ...item, quantity: 1 };
-      dispatch(updateCart(newItem));
-     
-    }
-
+    } 
+   
     } catch (error) {
       console.error("Error adding item to cart:", error);
       notification.error({
@@ -69,11 +66,12 @@ const CartPage = () => {
         description: "Failed to add item to the cart.",
       });
     }
+    setLoadings(false);
   };
 
   useEffect(() => {
     fetchCartItems();
-    //handleAddToCart();
+    
   }, [users?.id, isAuthenticated, dispatch]);
 
 
@@ -81,31 +79,31 @@ const CartPage = () => {
     eventEmitter.on('IncreaseProductTocart', fetchCartItems);
     eventEmitter.on('RemoveProductTocart', fetchCartItems);
     return () => {
-        // Cleanup the listener when the component unmounts
+        
         eventEmitter.removeListener('IncreaseProductTocart', fetchCartItems);
         eventEmitter.removeListener('RemoveProductTocart', fetchCartItems);
     };
-}, []);
+}, [fetchCartItems]);
 
   const handleDecreaseItemCart = async (item) => {
     try {
+      setLoadings(true);
       const existingItem = cartItems.find(
-        (cartItem) => cartItem.productId._id === item.productId._id
+        (cartItem) => cartItem?.productId?._id === item?.productId?._id
       );
-     // eventEmitter.emit('decreaseCart', item);
+ 
       if (existingItem) {
         if (existingItem.quantity > 1) {
-          // Decrease the item quantity
+         
           const updatedItem = {
             ...existingItem,
             quantity: existingItem.quantity - 1,
           };
-          dispatch(updateCart(updatedItem)); // Ensure this updates Redux state
-          //console.log("Decreased item quantity:", updatedItem);
+          dispatch(updateCart(updatedItem)); 
         } else {
-          // Remove the item if quantity reaches 0 or less
+         
           handleRemoveFromCart(existingItem);
-          //console.log("Removed item from cart:", existingItem);
+          
         }
       } else {
         console.warn("Item not found in the cart:", item);
@@ -117,12 +115,13 @@ const CartPage = () => {
         description: "Failed to update item quantity.",
       });
     }
+    setLoadings(false);
   };
 
   const handleRemoveFromCart = async (item) => {
     try {
       dispatch(removeCart(item));
-      //eventEmitter.emit('removeCart', item);
+   
     } catch (error) {
       console.error("Error removing item from cart:", error);
       notification.error({
@@ -136,120 +135,145 @@ const CartPage = () => {
   return (
   
     <Box
-      sx={{
-        maxWidth: "400px",
-        margin: "auto",
-        padding: "20px",
-        border: "1px solid #ccc",
-        borderRadius: "8px",
-        backgroundColor: "#EDEADE",
-        textAlign: "center",
-      }}
+    sx={{
+      // maxWidth: "700px",
+      margin: "auto",
+      padding: "20px",
+      border: "1px solid #ccc",
+      borderRadius: "8px",
+      backgroundColor: "#FAF9F6",
+      textAlign: "center",
+      boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+    }}
+  >
+    <Typography
+      variant="h4"
+      sx={{ marginBottom: "20px", fontWeight: "bold", color: "#333" }}
     >
-      <Typography variant="h4" sx={{ marginBottom: "20px" }}>
-        Cart
-      </Typography>
-      {cartItems.length === 0 ? (
-        <Typography variant="body1">No items in the cart.</Typography>
-      ) : (
-        <>
-          <ul style={{ listStyleType: "none", padding: 0, margin: 0 }}>
-            {cartItems.map((item) => (
-              
-              <li key={item._id} style={{ marginBottom: "20px" }}>
+      Cart
+    </Typography>
+    {cartItems.length === 0 ? (
+      <Typography variant="body1">No items in the cart.</Typography>
+    ) : (
+      <>
+        <ul style={{ listStyleType: "none", padding: 0, margin: 0,display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'20px' }}>
+          {cartItems.map((item) => (
+            <li key={item?._id} style={{ marginBottom: "20px" }}>
+              <Box
+                sx={{
+                  // display: "flex",
+                  alignItems: "center",
+                  gap: "15px",
+                  border: "1px solid #ddd",
+                  borderRadius: "8px",
+                  padding: "10px",
+                  backgroundColor: "#fff",
+                }}
+              >
                 <Box
+                  component="img"
+                  src={item?.productId?.imageUrl || "fallback-image-url.jpg"}
+                  alt={item?.productId?.name}
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "15px",
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                    padding: "10px",
-                    backgroundColor: "#fff",
+                    width: "80px",
+                    height: "80px",
+                    objectFit: "",
+                    borderRadius: "4px",
                   }}
-                >
-                  <Box
-                    component="img"
-                    src={item.productId.imageUrl || "fallback-image-url.jpg"}
-                    alt={item.productId.name}
-                    sx={{
-                      width: "80px",
-                      height: "80px",
-                      objectFit: "cover",
-                      borderRadius: "4px",
-                    }}
-                  />
-                  {/* <Box>
-                    <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                      {item.name}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: '#555' }}>
-                      ₹{item.price.toFixed(2)} x {item.quantity} = ₹{(item.price.toFixed(2) * item.quantity)}
-                    
-                    </Typography>
-                  </Box> */}
-            
-                 
-                  <Box>
-                    <Typography variant="body1" sx={{ fontWeight: "bold" }}>
-                      {item.productId.name || "Unnamed Item"}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: "#555" }}>
-                      ₹{item.productId.price ? item.productId.price.toFixed(2) : "0.00"} x{" "}
-                      {item.quantity || 0} = ₹
-                      {item.productId.price && item.quantity
-                        ? (item.productId.price * item.quantity).toFixed(2)
-                        : "0.00"}
-                    </Typography>
-                  </Box>
+                />
+                <Box sx={{ flex: 1, textAlign: "center" }}>
+                  <Typography
+                    variant="body1"
+                    sx={{ fontWeight: "bold", fontSize: "1.1rem", color: "#333" }}
+                  >
+                    {item?.productId?.name || "Unnamed Item"}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "#555" }}>
+                    ₹{item?.productId?.price?.toFixed(2) || "0.00"} x{" "}
+                    {item?.quantity || 0} = ₹
+                    {(item?.productId?.price * item?.quantity)?.toFixed(2) || "0.00"}
+                  </Typography>
                 </Box>
+
                 <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    gap: "10px",
-                    marginTop: "10px",
-                  }}
-                >
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={() => handleDecreaseItemCart(item)}
-                    sx={{ fontWeight: "bold" }}
-                    aria-label="Decrease quantity"
-                  >
-                    -
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    onClick={() => handleRemoveFromCart(item)}
-                    sx={{ fontWeight: "bold" }}
-                    aria-label="Remove item"
-                  >
-                    Remove
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleAddToCart(item)}
-                    sx={{ fontWeight: "bold" }}
-                    aria-label="Increase quantity"
-                  >
-                    +
-                  </Button>
-                </Box>
-              </li>
-            ))}
-          </ul>
-          <hr />
-          <Typography variant="h6" sx={{ marginTop: "20px" }}>
-            Total: ₹{total.toFixed(2)}
-          </Typography>
-        </>
-      )}
-    </Box>
-  );
+  sx={{
+    display: "flex",
+    justifyContent: "center",
+    gap: "10px",
+    marginTop: "10px",
+  }}
+>
+  <Button
+    onClick={() => handleDecreaseItemCart(item)}
+    sx={{
+      fontWeight: "bold",
+      color: "#fff",
+      background: "#36454F",
+      boxShadow: "0 4px 8px rgba(255, 138, 0, 0.4)",
+      "&:hover": {
+        background: "#0096FF",
+        boxShadow: "0 6px 12px rgba(255, 87, 34, 0.5)",
+      },
+      padding: "10px 20px",
+      borderRadius: "50px",
+      minWidth: "50px",
+    }}
+  >
+    -
+  </Button>
+  <Button
+    onClick={() => handleRemoveFromCart(item)}
+    sx={{
+      fontWeight: "bold",
+      color: "#D32F2F",
+      backgroundColor: "#FFFFFF",
+      border: "2px solid #E57373",
+      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+      "&:hover": {
+        backgroundColor: "#FFEBEE",
+        borderColor: "#C62828",
+        boxShadow: "0 4px 8px rgba(244, 67, 54, 0.3)",
+      },
+      padding: "10px 20px",
+      borderRadius: "12px",
+    }}
+  >
+    Remove
+  </Button>
+  <Button
+    onClick={() => handleAddToCart(item)}
+    sx={{
+      fontWeight: "bold",
+      color: "#fff",
+      background: "#36454F",
+      boxShadow: "0 4px 8px rgba(109, 242, 244, 0.4)",
+      "&:hover": {
+        background: "#0096FF",
+        boxShadow: "0 6px 12px rgba(76, 175, 80, 0.5)",
+      },
+      padding: "10px 20px",
+      borderRadius: "50px",
+      minWidth: "50px",
+    }}
+  >
+    +
+  </Button>
+</Box>
+
+              </Box>
+       
+
+            </li>
+          ))}
+        </ul>
+        <hr />
+        <Typography variant="h6" sx={{ marginTop: "20px" }}>
+          Total: ₹{total.toFixed(2)}
+        </Typography>
+      </>
+    )}
+  </Box>
+);
 };
 
 export default CartPage;

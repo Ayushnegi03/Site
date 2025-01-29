@@ -4,10 +4,10 @@ const connectDB = require('./Config/db.js');
 const cors = require('cors')
 const authRoutes = require('./Route/authRoutes.js');
 const productRoutes = require('./Route/productRoute.js');
-const personRoutes = require('./Route/personRoute.js');
+//const personRoutes = require('./Route/personRoute.js');
 const cartRoute = require('./Route/cartRoute.js')
 const cookieParser = require('cookie-parser');
-const admins = require('./Route/adminRoutes.js')
+
 
 //const {setUser} = require('./service/auth.js')
 const app = express();
@@ -62,7 +62,7 @@ app.get('/',(req,res)=>{
 
 app.use('/auth',authRoutes);
 app.use('/product', productRoutes);
-app.use('/person', personRoutes);
+// app.use('/person', personRoutes);
 app.use('/cart',cartRoute)
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
